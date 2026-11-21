@@ -1,0 +1,11 @@
+*
+!index.html
+!styles.css
+!script.js
+!js
+!js/**
+!scripts
+!scripts/build.mjs
+!package.json
+!package-lock.json
+!vercel.json

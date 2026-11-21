@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="75 original algorithm stories with animated walkthroughs. Search, watch, and optionally practice." />
+    <title>CodeStories — algorithms as stories</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="topbar-left">
+          <a class="brand" href="#/">Code<span>Stories</span></a>
+          <button id="libraryToggle" class="drawer-trigger" aria-pressed="true">All Stories <span id="libraryCountBadge">(75)</span></button>
+        </div>
+        <nav class="study-tabs" aria-label="Learning views"><a href="#/learn" data-study-view="learn">Learn</a><a href="#/quiz" data-study-view="quiz">Quiz</a><a href="#/flashcards" data-study-view="flashcards">Flashcards</a></nav>
+        <div class="topbar-right">
+          <button id="voiceToggle" class="voice-toggle" aria-pressed="false" title="Toggle voice narration">Voice: Off</button>
+          <a href="#credits" class="quiet-link">Sources &amp; credits</a>
+        </div>
+      </div>
+    </header>
+
+    <main id="home" class="storybook-main">
+      <section id="landingGuide" class="landing-guide" aria-label="What this site is and how to navigate">
+        <div class="guide-intro">
+          <p class="eyebrow">Animated DS&amp;A Storybook · 75 Problems</p>
+          <h1>Understand algorithms as illustrated stories—then drill the solutions.</h1>
+          <p>Every problem becomes a step-by-step comic walkthrough with voice narration, data-structure reasoning, worked traces, and time/space complexity practice.</p>
+        </div>
+        <ol class="guide-how" aria-label="How to navigate">
+          <li><strong>1. Filter &amp; pick</strong><span>Browse all 75 stories below by Topic, Coding Pattern, Company, or keyword.</span></li>
+          <li><strong>2. Watch &amp; listen</strong><span>Step panel-by-panel through the animation, or turn on <em>Voice</em> to hear each move narrated.</span></li>
+          <li><strong>3. Quiz &amp; drill</strong><span>Use <em>Quiz</em> or <em>Flashcards</em> above to test traces, DS&amp;A choices, and complexity. Progress saves locally.</span></li>
+        </ol>
+      </section>
+
+      <article id="studio" class="storybook-spread hidden">
+        <header class="chapter-header">
+          <div class="chapter-titles">
+            <p id="lessonPattern" class="eyebrow"></p>
+            <p id="storyHook" class="story-hook"></p>
+            <h2 id="lessonTitle" tabindex="-1"></h2>
+          </div>
+          <div class="reader-toolbar">
+            <label for="exampleSelect" class="example-inline"><span>Case</span><select id="exampleSelect" aria-label="Example"></select></label>
+            <button id="speakStep" class="quiet-button" title="Read current page aloud">Read aloud</button>
+            <a id="originalProblem" class="quiet-link" target="_blank" rel="noopener noreferrer">LeetCode ↗</a>
+            <button id="closeStory" class="quiet-button" aria-label="Close story">← All stories</button>
+          </div>
+        </header>
+
+        <section class="comic-panel" aria-label="Animated walkthrough">
+          <div class="panel-topbar">
+            <span id="stepCounter" class="panel-badge"></span>
+            <span id="phase" class="phase-label"></span>
+            <div class="stage-quick-actions">
+              <button id="resetButton">Restart</button>
+              <button id="playButton">Play</button>
+            </div>
+          </div>
+
+          <div id="scene" class="scene" aria-label="Lesson visualization"></div>
+
+          <div class="comic-caption-area">
+            <div class="speech-bubble">
+              <h3 id="stepHeading"></h3>
+              <p id="stepSummary" role="status"></p>
+            </div>
+            <div class="panel-turns">
+              <button id="previousButton" aria-label="Previous step">← Back</button>
+              <button id="nextButton">Next panel →</button>
+            </div>
+          </div>
+
+          <div class="timeline-bar">
+            <div class="timeline-scrub">
+              <label for="scrubber" class="sr-only">Step</label><input id="scrubber" type="range" min="0" value="0" />
+            </div>
+            <div class="timeline" id="timeline" aria-label="Walkthrough steps"></div>
+          </div>
+        </section>
+
+        <section class="story-strip" aria-label="Story summary">
+          <div class="story-beat">
+            <span class="eyebrow">1 · The premise</span>
+            <p id="storyProblem"></p>
+          </div>
+          <div class="story-beat beat-move">
+            <span class="eyebrow">2 · The clever move</span>
+            <p id="storyMove"></p>
+          </div>
+          <div class="story-beat beat-trap">
+            <span class="eyebrow">3 · The trap</span>
+            <p id="storyWatch" class="watch-note"></p>
+          </div>
+        </section>
+
+        <div class="storybook-footer">
+          <div id="learningActions" class="learning-actions"><p id="readerProgress"></p><button id="markLearned">Mark learned &amp; continue</button></div>
+
+          <div class="practice-options" aria-label="Optional practice"><span>Practice this story:</span><label><input id="quizOptIn" type="checkbox" /> Quiz</label><label><input id="flashcardOptIn" type="checkbox" /> Flashcards</label></div>
+          <section id="quizSection" class="practice-panel hidden" aria-label="Optional quiz"></section>
+          <section id="flashcardSection" class="practice-panel hidden" aria-label="Optional flashcards"></section>
+
+          <div class="storybook-extras">
+            <details class="extra-detail">
+              <summary>Code outline &amp; complexity</summary>
+              <p id="complexity"></p>
+              <pre id="code"></pre>
+            </details>
+            <details class="extra-detail" id="patternNotes"><summary>Pattern field notes</summary><div id="patternOverview"></div></details>
+            <details class="extra-detail hidden" id="customExamples">
+              <summary>Try your own input</summary>
+              <div id="algorithmInput" class="hidden"><label>Numbers <input id="numbersInput" inputmode="text" /></label><label id="kLabel">Window size k <input id="kInput" type="number" min="1" /></label><button id="applyNumbers">Apply input</button><p id="numberHelp"></p></div>
+              <div id="systemInput" class="hidden"><label>Metadata cache <select id="metadataSelect" aria-label="Metadata cache"><option value="miss">Miss</option><option value="hit">Hit</option><option value="unavailable">Unavailable</option></select></label><label>Image CDN <select id="mediaSelect" aria-label="Image CDN"><option value="miss">Miss</option><option value="hit">Hit</option></select></label><button id="applyScenario">Trace request</button></div>
+              <p id="inputError" role="alert"></p>
+            </details>
+          </div>
+        </div>
+      </article>
+
+      <section id="catalogDock" class="catalog-dock" aria-label="Story library and filters">
+        <div class="dock-filters" aria-label="Story filters">
+          <div class="dock-search-row">
+            <label for="problemSearch" class="search-label"><span>Find a story</span><input id="problemSearch" type="search" maxlength="160" placeholder="Story title, problem, #283, pattern, or company…" /></label>
+            <label for="topicFilter"><span>Topic</span><select id="topicFilter"></select></label>
+            <label for="patternFilter"><span>Coding pattern</span><select id="patternFilter" aria-describedby="patternFilterNote"></select></label>
+            <label for="companyFilter"><span>Company</span><select id="companyFilter" aria-describedby="companyTagNote"></select></label>
+            <button id="clearSearch" class="quiet-button" aria-label="Reset search and filters">Reset</button>
+          </div>
+          <div class="dock-notes">
+            <p id="patternFilterNote" class="filter-note">Topic narrows related coding patterns.</p>
+            <p id="companyTagNote" class="filter-note">Company tags are historical community reports, not confirmed interview lists. <a id="companyTagSource" target="_blank" rel="noopener noreferrer">Source ↗</a></p>
+            <p id="resultCount" class="sidebar-count" role="status"></p>
+          </div>
+        </div>
+
+        <section id="studySummary" class="study-summary" aria-label="Current study set">
+          <div class="study-summary-copy">
+            <h2 id="studySetTitle"></h2>
+            <p id="learningProgress" role="status"></p>
+          </div>
+          <div class="study-actions"><button id="continueLearning">Start learning</button><button id="resetStudy" class="quiet-button">Reset progress</button></div>
+          <div id="resetConfirmation" class="reset-confirmation hidden"><p id="resetMessage"></p><button id="confirmResetStudy">Confirm reset</button><button id="cancelResetStudy" class="quiet-button">Cancel</button></div>
+        </section>
+      </section>
+
+      <section id="studyPanel" class="study-panel hidden" aria-labelledby="studyTitle">
+        <div class="study-panel-heading">
+          <div>
+            <p id="studyPosition" class="eyebrow"></p>
+            <h2 id="studyTitle" tabindex="-1"></h2>
+            <p id="studyLessonName"></p>
+          </div>
+          <div class="practice-navigation">
+            <button id="studyReadStory" class="quiet-button">Open story →</button>
+            <button id="studyPrevious" aria-label="Previous practice item">←</button>
+            <button id="studyNext" aria-label="Next practice item">→</button>
+          </div>
+        </div>
+        <div id="studyExercise" class="practice-panel"></div>
+        <p id="studyComplete" class="filter-note" role="status"></p>
+      </section>
+
+      <div id="problemList" class="story-list" aria-label="All algorithm stories"></div>
+      <p id="emptyResults" class="empty-state hidden">No stories match. Adjust filters or reset.</p>
+      <div id="systemExtra" class="system-extra"><span>Bonus story: trace how an image-feed read handles metadata cache &amp; CDN hits.</span><button id="startSystem" class="quiet-button" aria-label="Read the system story">Two Couriers: Image-feed system story →</button></div>
+    </main>
+    <footer>
+      <details id="credits"><summary>Sources & credits</summary><p>Original notes, examples, diagrams, and algorithm code. Inspired by independent resources, without affiliation or endorsement.</p><div id="sourceList"></div><p>Problem membership follows the public DesignGurus LeetCode 75 list; direct official verification was blocked. NeetCode’s playlist is supplemental <b>Blind 75</b> material, not the same problem set.</p></details>
+    </footer>
+    <div id="toast" role="status" class="toast"></div>
+    <script type="module" src="script.js"></script>
+  </body>
+</html>
