@@ -15,9 +15,9 @@
       <div class="topbar-inner">
         <div class="topbar-left">
           <a class="brand" href="#/">Code<span>Stories</span></a>
-          <button id="libraryToggle" class="drawer-trigger" aria-pressed="true">All Stories <span id="libraryCountBadge">(75)</span></button>
+          <button id="libraryToggle" class="drawer-trigger">Full library <span id="libraryCountBadge">(75)</span></button>
         </div>
-        <nav class="study-tabs" aria-label="Learning views"><a href="#/learn" data-study-view="learn">Learn</a><a href="#/quiz" data-study-view="quiz">Quiz</a><a href="#/flashcards" data-study-view="flashcards">Flashcards</a></nav>
+        <nav class="study-tabs" aria-label="Learning views"><a href="#/learn" data-study-view="learn">Learn</a><a href="#/quiz" data-study-view="quiz">Quiz</a><a href="#/flashcards" data-study-view="flashcards">Flashcards</a><a href="#/review" data-study-view="review">Review <span id="reviewDueCount">(0)</span></a></nav>
         <div class="topbar-right">
           <button id="voiceToggle" class="voice-toggle" aria-pressed="false" title="Toggle voice narration">Voice: Off</button>
           <a href="#credits" class="quiet-link">Sources &amp; credits</a>
@@ -28,14 +28,14 @@
     <main id="home" class="storybook-main">
       <section id="landingGuide" class="landing-guide" aria-label="What this site is and how to navigate">
         <div class="guide-intro">
-          <p class="eyebrow">Animated DS&amp;A Storybook · 75 Problems</p>
-          <h1>Understand algorithms as illustrated stories—then drill the solutions.</h1>
-          <p>Every problem becomes a step-by-step comic walkthrough with voice narration, data-structure reasoning, worked traces, and time/space complexity practice.</p>
+          <p class="eyebrow">Five guided lessons · Local pilot</p>
+          <h1>Learn an algorithm by making its next decision.</h1>
+          <p>Two easy problems and three medium ones. Study an example, finish a missing step, then reconstruct the solution without the guide. Return later to find out what you can still recall.</p>
         </div>
         <ol class="guide-how" aria-label="How to navigate">
-          <li><strong>1. Filter &amp; pick</strong><span>Browse all 75 stories below by Topic, Coding Pattern, Company, or keyword.</span></li>
-          <li><strong>2. Watch &amp; listen</strong><span>Step panel-by-panel through the animation, or turn on <em>Voice</em> to hear each move narrated.</span></li>
-          <li><strong>3. Quiz &amp; drill</strong><span>Use <em>Quiz</em> or <em>Flashcards</em> above to test traces, DS&amp;A choices, and complexity. Progress saves locally.</span></li>
+          <li><strong>1. Learn with support</strong><span>Watch the state change, predict a move, then finish a partly worked step.</span></li>
+          <li><strong>2. Retrieve without the guide</strong><span>Try a fresh input and explain why it works. Writing is optional; compare your attempt with a short rubric.</span></li>
+          <li><strong>3. Come back later</strong><span>Save a return date. Review mixes due problems without giving away their pattern. Finishing a walkthrough is not a recall score.</span></li>
         </ol>
       </section>
 
@@ -53,6 +53,7 @@
             <button id="closeStory" class="quiet-button" aria-label="Close story">← All stories</button>
           </div>
         </header>
+        <p id="guidedObjective" class="guided-objective hidden"></p>
 
         <section class="comic-panel" aria-label="Animated walkthrough">
           <div class="panel-topbar">
@@ -70,6 +71,10 @@
             <div class="speech-bubble">
               <h3 id="stepHeading"></h3>
               <p id="stepSummary" role="status"></p>
+              <section id="predictionSection" class="guided-prediction hidden" aria-label="Pause and predict">
+                <div id="predictionExercise"></div>
+                <button id="showPrediction" class="quiet-button">Show me why</button>
+              </section>
             </div>
             <div class="panel-turns">
               <button id="previousButton" aria-label="Previous step">← Back</button>
@@ -84,6 +89,8 @@
             <div class="timeline" id="timeline" aria-label="Walkthrough steps"></div>
           </div>
         </section>
+
+        <section id="guidedProof" class="guided-proof hidden" aria-label="Correctness and complexity"></section>
 
         <section class="story-strip" aria-label="Story summary">
           <div class="story-beat">
@@ -125,6 +132,11 @@
       </article>
 
       <section id="catalogDock" class="catalog-dock" aria-label="Story library and filters">
+        <div class="collection-tabs" role="group" aria-label="Study collection">
+          <button id="guidedCollection" aria-pressed="true">Guided five</button>
+          <button id="allCollection" aria-pressed="false">Full library · 75</button>
+          <span id="collectionNote">Hand-written questions and prediction pauses.</span>
+        </div>
         <div class="dock-filters" aria-label="Story filters">
           <div class="dock-search-row">
             <label for="problemSearch" class="search-label"><span>Find a story</span><input id="problemSearch" type="search" maxlength="160" placeholder="Story title, problem, #283, pattern, or company…" /></label>
@@ -144,6 +156,7 @@
           <div class="study-summary-copy">
             <h2 id="studySetTitle"></h2>
             <p id="learningProgress" role="status"></p>
+            <p id="recallProgress" class="recall-note"></p>
           </div>
           <div class="study-actions"><button id="continueLearning">Start learning</button><button id="resetStudy" class="quiet-button">Reset progress</button></div>
           <div id="resetConfirmation" class="reset-confirmation hidden"><p id="resetMessage"></p><button id="confirmResetStudy">Confirm reset</button><button id="cancelResetStudy" class="quiet-button">Cancel</button></div>
@@ -158,6 +171,7 @@
             <p id="studyLessonName"></p>
           </div>
           <div class="practice-navigation">
+            <a href="#/learn" class="quiet-link" id="chooseStudySet">Choose lessons</a>
             <button id="studyReadStory" class="quiet-button">Open story →</button>
             <button id="studyPrevious" aria-label="Previous practice item">←</button>
             <button id="studyNext" aria-label="Next practice item">→</button>
@@ -165,6 +179,7 @@
         </div>
         <div id="studyExercise" class="practice-panel"></div>
         <p id="studyComplete" class="filter-note" role="status"></p>
+        <button id="startRecallFromCards" class="quiet-button hidden">Practice this lesson from memory</button>
       </section>
 
       <div id="problemList" class="story-list" aria-label="All algorithm stories"></div>

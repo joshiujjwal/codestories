@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { problems } from "../js/catalog.js";
+import { lessons } from "../js/lessons/index.js";
+import { practiceKey } from "../js/practice-key.js";
+
+const windowKey = practiceKey(lessons["max-average-643"], 0);
 
 test("landing page explains what the site is, how to navigate, shows all 75 stories, and supports voice narration", async ({ page }) => {
   await page.addInitScript(() => {
@@ -16,9 +20,11 @@ test("landing page explains what the site is, how to navigate, shows all 75 stor
   });
   await page.goto("/");
   await expect(page.locator("#landingGuide")).toBeVisible();
-  await expect(page.locator("#landingGuide")).toContainText("Understand algorithms as illustrated stories");
+  await expect(page.locator("#landingGuide")).toContainText("Learn an algorithm by making its next decision");
   await expect(page.getByRole("list", { name: "How to navigate" })).toBeVisible();
   await expect(page.locator("#studio")).toBeHidden();
+  await expect(page.locator(".story-card")).toHaveCount(5);
+  await page.locator("#allCollection").click();
   await expect(page.locator(".story-card")).toHaveCount(75);
   await page.getByRole("searchbox", { name: "Find a story" }).fill("Showdown");
   await expect(page.locator(".story-card")).toHaveCount(1);
@@ -43,6 +49,7 @@ test("landing page explains what the site is, how to navigate, shows all 75 stor
 
 test("topic selection reconciles and persists only related coding patterns", async ({ page }) => {
   await page.goto("/");
+  await page.locator("#allCollection").click();
   await page.locator("#patternFilter").selectOption("dp");
   await page.locator("#topicFilter").selectOption("Sliding Window");
   await expect(page.locator("#patternFilter")).toHaveValue("sliding-window");
@@ -65,18 +72,18 @@ test("topic selection reconciles and persists only related coding patterns", asy
 });
 
 test("guided learning and filtered practice persist, retry, and reset without clearing other stories", async ({ page }) => {
-  await page.addInitScript(() => {
+  await page.addInitScript((key) => {
     if (!localStorage.getItem("codestories.study")) {
       localStorage.setItem("codestories.study", JSON.stringify({
         version: 1, filters: { query: "283", topic: "Two Pointers", patternId: "two-pointers", company: "Google" },
         learned: ["max-average-643"],
-        quiz: { answers: { "max-average-643:0": 1 } },
-        flashcards: { known: ["max-average-643:0"] }
+        quiz: { answers: { [key]: 1 } },
+        flashcards: { known: [key] }
       }));
       localStorage.setItem("codestories.learning", JSON.stringify({ version: 1, lessons: { "max-average-643": { stepId: "window-1" } } }));
       localStorage.setItem("unrelated.app", "keep");
     }
-  });
+  }, windowKey);
   await page.goto("/");
   await expect(page.locator(".story-card")).toHaveCount(1);
   await expect(page.locator("#learningProgress")).toContainText("0/1 marked learned");
@@ -128,15 +135,15 @@ test("guided learning and filtered practice persist, retry, and reset without cl
     unrelated: localStorage.getItem("unrelated.app")
   }));
   expect(saved.study.learned).toEqual(["max-average-643"]);
-  expect(saved.study.quiz.answers).toEqual({ "max-average-643:0": 1 });
-  expect(saved.study.flashcards.known).toEqual(["max-average-643:0"]);
+  expect(saved.study.quiz.answers).toEqual({ [windowKey]: 1 });
+  expect(saved.study.flashcards.known).toEqual([windowKey]);
   expect(saved.learning.lessons["move-zeroes-283"]).toBeUndefined();
   expect(saved.learning.lessons["max-average-643"].stepId).toBe("window-1");
   expect(saved.unrelated).toBe("keep");
   await expect(page.locator("#learningProgress")).toContainText("0/1 marked learned");
   await views.getByRole("link", { name: "Learn", exact: true }).click();
   await page.locator("#continueLearning").click();
-  await expect(page.locator("#stepCounter")).toContainText("PANEL 1");
+  await expect(page.locator("#stepCounter")).toContainText("STEP 1");
   await expect(page.locator("#quizSection")).toBeHidden();
 });
 
@@ -147,15 +154,18 @@ test("empty practice and unavailable storage remain explicit and usable", async 
   await expect(page.locator("#toast")).toContainText("could not be saved");
   await page.getByRole("navigation", { name: "Learning views" }).getByRole("link", { name: "Quiz", exact: true }).click();
   await expect(page.locator("#studyPosition")).toHaveText("No practice items in this set");
-  await expect(page.locator("#studyExercise")).toBeEmpty();
+  await expect(page.locator(".recall-empty")).toContainText("Choose guided lessons");
   await expect(page.locator("#studyNext")).toBeDisabled();
+  await page.locator("#chooseStudySet").click();
   await page.getByRole("button", { name: "Reset search and filters" }).click();
-  await expect(page.locator("#studyExercise legend")).not.toBeEmpty();
-  await expect(page.locator("#studyQuizFeedback")).toBeEmpty();
+  await page.getByRole("navigation", { name: "Learning views" }).getByRole("link", { name: "Quiz", exact: true }).click();
+  await expect(page.locator("#recallPrompt")).not.toBeEmpty();
+  await expect(page.locator(".recall-model")).toHaveCount(0);
 });
 
 test("landing filters compose, retain selections while reading, show evidence, and reset on mobile", async ({ page }) => {
   await page.goto("/");
+  await page.locator("#allCollection").click();
   await page.getByRole("combobox", { name: "Coding pattern", exact: true }).selectOption("two-pointers");
   await page.getByRole("combobox", { name: "Topic", exact: true }).selectOption("Two Pointers");
   await page.getByRole("combobox", { name: "Company", exact: true }).selectOption("Google");
@@ -191,6 +201,7 @@ test("landing filters compose, retain selections while reading, show evidence, a
 
 test("one page offers all stories, simple search, and independent practice opt-ins", async ({ page }) => {
   await page.goto("/");
+  await page.locator("#allCollection").click();
   await expect(page.locator(".story-card")).toHaveCount(75);
   await page.getByRole("searchbox", { name: "Find a story" }).fill("283");
   await expect(page.locator(".story-card")).toHaveCount(1);
@@ -225,10 +236,10 @@ test("custom input and paused progress survive reload, without forcing old revie
   await page.getByLabel("Numbers", { exact: true }).fill("0, 6, 0, 1, 6");
   await page.getByRole("button", { name: "Apply input", exact: true }).click();
   await page.locator("#timeline button").last().click();
-  await expect(page.locator("#stepSummary")).toContainText("[6, 1, 6, 0, 0]");
+  await expect(page.locator("#scene .guide-result")).toContainText("[6, 1, 6, 0, 0]");
   await expect(page.locator("#timeline button").last()).toBeFocused();
   await page.reload();
-  await expect(page.locator("#stepSummary")).toContainText("[6, 1, 6, 0, 0]");
+  await expect(page.locator("#scene .guide-result")).toContainText("[6, 1, 6, 0, 0]");
   await expect(page.getByRole("button", { name: "Play", exact: true })).toBeVisible();
   await page.getByText("Try your own input", { exact: true }).click();
   await page.getByLabel("Numbers", { exact: true }).fill("1,,2");
@@ -236,6 +247,7 @@ test("custom input and paused progress survive reload, without forcing old revie
   await expect(page.getByRole("alert")).toContainText("blank entries");
   await page.getByRole("button", { name: "Close story" }).click();
   await expect(page.locator("#studio")).toBeHidden();
+  await page.locator("#allCollection").click();
   await expect(page.locator(".story-card")).toHaveCount(75);
 });
 
@@ -280,7 +292,7 @@ test("every one of the 75 stories renders its actual walkthrough, alternate case
     await page.locator("#timeline button").last().click();
     await expect(page.locator("#stepSummary")).not.toBeEmpty();
     await page.getByRole("combobox", { name: "Example", exact: true }).selectOption("1");
-    await expect(page.locator("#stepCounter")).toContainText("PANEL 1");
+    await expect(page.locator("#stepCounter")).toContainText(/(?:PANEL|STEP) 1/);
     await page.locator("#timeline button").last().click();
     await expect(page.locator("#scene")).not.toBeEmpty();
     await page.getByRole("checkbox", { name: "Quiz", exact: true }).check();
@@ -312,10 +324,11 @@ test("pattern search, credits, and stale saved steps remain usable", async ({ pa
     version: 1, lessons: { "max-average-643": { stepId: "removed", mode: "review", view: "3d" } }
   })));
   await page.goto("/#/lesson/max-average-643");
-  await expect(page.locator("#stepCounter")).toContainText("PANEL 1");
+  await expect(page.locator("#stepCounter")).toContainText("STEP 1");
   await expect(page.locator("#scene")).toBeVisible();
   await expect(page.locator("#quizSection")).toBeHidden();
   await page.getByRole("button", { name: "Close story" }).click();
+  await page.locator("#allCollection").click();
   await page.getByRole("searchbox", { name: "Find a story" }).fill("sliding window");
   await expect(page.locator(".story-card")).toHaveCount(4);
   await page.getByRole("searchbox", { name: "Find a story" }).fill("no such story");

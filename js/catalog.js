@@ -32,7 +32,8 @@ export const sources = [
   { name: "DesignGurus pattern guide", role: "Supplemental pattern reference; current guide covers 20 patterns", url: "https://www.designgurus.io/blog/top-lc-patterns" },
   { name: "LeetCode", role: "Original problems and official LeetCode 75 study plan", url: "https://leetcode.com/studyplan/leetcode-75/" },
   { name: "NeetCode", role: "Supplemental Blind 75 videos — a different problem list", url: "https://www.youtube.com/playlist?list=PLot-Xpze53ldVwtstag2TL4HQhAnC8ATf" },
-  { name: companyTagSource.name, role: "Historical company associations from public community CSVs; not verified current interview lists", url: companyTagSource.url }
+  { name: companyTagSource.name, role: "Historical company associations from public community CSVs; not verified current interview lists", url: companyTagSource.url },
+  { name: "IES · Organizing Instruction and Study", role: "Learning-design reference: spaced review, retrieval, worked examples, and explanatory questions", url: "https://ies.ed.gov/ncee/wwc/PracticeGuide/1" }
 ];
 
 // Source topics are retained even when the selected solving approach changes placement.

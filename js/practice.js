@@ -1,14 +1,18 @@
 import { escapeHTML as html } from "./renderers.js";
 
-export function renderQuestion(container, lesson, index, { answer, onAnswer, onRetry, onNext, prefix = "" }) {
+export function renderQuestion(container, lesson, index, {
+  answer, onAnswer, onRetry, onNext, prefix = "", revealed = false,
+  heading = `Quiz ${index + 1} of ${lesson.questions.length}`, checkLabel = "Check answer", showNext = true
+}) {
   const id = (name) => prefix ? `${prefix}${name[0].toUpperCase()}${name.slice(1)}` : name;
   const item = lesson.questions[index];
-  const answered = Number.isInteger(answer);
+  const answered = Number.isInteger(answer) || revealed;
   const isCorrect = answered && answer === item.answer;
-  container.innerHTML = `<p class="eyebrow">Quiz ${index + 1} of ${lesson.questions.length}</p><fieldset><legend>${html(item.prompt)}</legend>${item.choices.map((choice, choiceIndex) => {
+  const feedback = Number.isInteger(answer) && item.feedback ? `${item.feedback[answer]} ${item.explanation}` : item.explanation;
+  container.innerHTML = `<p class="eyebrow">${html(heading)}</p><fieldset><legend>${html(item.prompt)}</legend>${item.choices.map((choice, choiceIndex) => {
     const stateClass = answered ? (choiceIndex === item.answer ? "choice-correct" : answer === choiceIndex ? "choice-wrong" : "") : "";
     return `<label class="${stateClass}"><input type="radio" name="${id("quizAnswer")}" value="${choiceIndex}" ${answered ? "disabled" : ""} ${answer === choiceIndex ? "checked" : ""} /> <span>${html(choice)}</span></label>`;
-  }).join("")}</fieldset><div class="practice-actions"><button id="${id("checkQuiz")}" ${answered ? "disabled" : ""}>Check answer</button></div><p id="${id("quizFeedback")}" class="quiz-feedback ${answered ? (isCorrect ? "feedback-correct" : "feedback-wrong") : ""}" role="status">${answered ? `${isCorrect ? "Correct." : "Not yet."} ${html(item.explanation)}` : ""}</p><div class="practice-navigation"><button id="${id("retryQuestion")}" class="quiet-button ${answered ? "" : "hidden"}">Try again</button><button id="${id("nextQuestion")}" class="quiet-button ${answered ? "" : "hidden"}">Next question →</button></div>`;
+  }).join("")}</fieldset><div class="practice-actions"><button id="${id("checkQuiz")}" ${answered ? "disabled" : ""}>${html(checkLabel)}</button></div><p id="${id("quizFeedback")}" class="quiz-feedback ${answered ? (isCorrect || revealed ? "feedback-correct" : "feedback-wrong") : ""}" role="status">${answered ? `${revealed ? "Explanation." : isCorrect ? "Correct." : "Not yet."} ${html(feedback)}` : ""}</p><div class="practice-navigation"><button id="${id("retryQuestion")}" class="quiet-button ${answered ? "" : "hidden"}">Try again</button><button id="${id("nextQuestion")}" class="quiet-button ${answered && showNext ? "" : "hidden"}">Next question →</button></div>`;
   container.querySelector(`#${id("checkQuiz")}`).addEventListener("click", () => {
     const chosen = container.querySelector("input:checked");
     if (!chosen) { container.querySelector(`#${id("quizFeedback")}`).textContent = "Choose an answer before checking."; return; }
@@ -25,7 +29,7 @@ export function renderQuestion(container, lesson, index, { answer, onAnswer, onR
 export function renderFlashcard(container, lesson, index, { known, onRemember, onAgain, onNext, prefix = "" }) {
   const id = (name) => prefix ? `${prefix}${name[0].toUpperCase()}${name.slice(1)}` : name;
   const [question, answer] = lesson.cards[index];
-  container.innerHTML = `<div class="flashcard-face"><p class="eyebrow">Flashcard ${index + 1} of ${lesson.cards.length}${known ? " · Remembered" : ""}</p><h3>${html(question)}</h3><p id="${id("cardAnswer")}" class="flashcard-answer hidden">${html(answer)}</p></div><div class="practice-navigation"><button id="${id("revealCard")}">Reveal answer</button><button id="${id("rememberCard")}" disabled>Remember & next</button><button id="${id("studyCardAgain")}" class="quiet-button ${known ? "" : "hidden"}">Study again</button><button id="${id("nextCard")}" class="quiet-button">Next card →</button></div>`;
+  container.innerHTML = `<div class="flashcard-face"><p class="eyebrow">Flashcard ${index + 1} of ${lesson.cards.length}${known ? " · Previously reviewed" : ""}</p><h3>${html(question)}</h3><p id="${id("cardAnswer")}" class="flashcard-answer hidden">${html(answer)}</p></div><div class="practice-navigation"><button id="${id("revealCard")}">Reveal answer</button><button id="${id("rememberCard")}" disabled>Reviewed & next</button><button id="${id("studyCardAgain")}" class="quiet-button ${known ? "" : "hidden"}">Study again</button><button id="${id("nextCard")}" class="quiet-button">Next card →</button></div>`;
   container.querySelector(`#${id("revealCard")}`).addEventListener("click", () => {
     container.querySelector(`#${id("cardAnswer")}`).classList.remove("hidden");
     container.querySelector(`#${id("revealCard")}`).disabled = true;

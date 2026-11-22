@@ -4,6 +4,7 @@ import { moveZeroesLesson, buildMoveZeroesTrace, validateMoveZeroesInput } from 
 import { maxDepthLesson, buildMaxDepthTrace } from "./max-depth.js";
 import { storyLessons } from "../stories/index.js";
 import { storyTitles } from "../story-titles.js";
+import { applyGuides } from "../guided/index.js";
 
 export const lessons = {
   ...storyLessons,
@@ -59,3 +60,5 @@ export const lessons = {
     complexity: "A deterministic route illustration, not a traffic simulator. Durable stores are assumed healthy."
   }
 };
+
+applyGuides(lessons);
